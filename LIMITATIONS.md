@@ -23,9 +23,13 @@ post-cutoff stratum is the only one where memorization can be largely excluded.
   sporadically. These are retried and count against the rate limit like any attempt.
 - **Structured output is not strictly enforced**: the provider accepts a JSON schema in
   `response_format` but the model can omit required fields (observed: a response containing
-  only `{"probability": 0.5}` where the schema required four fields). The parser must
-  tolerate missing non-probability fields; missing/out-of-range probability is a parse
-  failure handled by the dead-letter path.
+  only `{"probability": 0.5}` where the schema required four fields) and sometimes wraps
+  output in markdown code fences. The parser must strip fences and tolerate missing
+  non-probability fields; missing/out-of-range probability is a parse failure handled by
+  the dead-letter path.
+- **Transient 200-with-empty/non-JSON-body responses** occur under rate pressure (observed
+  5 times in 5 paced high-effort calls, then 0 times in 4 calls minutes later). The client
+  treats an unparseable 200 body as retryable, subject to the normal attempt cap.
 - **Empty content at small max_tokens**: with `reasoning_effort=high` and `max_tokens=4096`,
   roughly half of preflight calls returned empty content (reasoning consumed the budget).
   The runner uses a larger `max_tokens` for high/max-effort conditions; truncation
