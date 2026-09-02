@@ -44,8 +44,13 @@ async def completion(
                     f"{BASE_URL}/chat/completions", headers=_HEADERS, json=payload
                 )
             if r.status_code == 200:
-                return r.json(), time.perf_counter() - t0, attempt
-            if r.status_code in RETRY_STATUS:
+                try:
+                    return r.json(), time.perf_counter() - t0, attempt
+                except Exception as e:
+                    # Transient provider bug observed under rate pressure: HTTP 200
+                    # with an empty or non-JSON body. Retry like a 5xx.
+                    last_err = f"200-with-bad-body: {type(e).__name__}: {r.text[:120]!r}"
+            elif r.status_code in RETRY_STATUS:
                 last_err = f"HTTP {r.status_code}: {r.text[:200]}"
             else:
                 raise AttemptExhausted(f"HTTP {r.status_code}: {r.text[:200]}")
