@@ -51,7 +51,11 @@ You will be given:
 - The fact that the question is closed
 
 Respond ONLY with a JSON object matching the required schema, where the fields capture
-the procedure above.
+the procedure above. The JSON object MUST contain exactly these keys:
+"probability" (a number in [0,1] - your final adjusted forecast), "reference_class"
+(the class and its historical base rate), "key_drivers" (list of case-specific
+adjustments), "confidence_note". Do NOT use keys like "base_rate", "p", "prob",
+or "final_probability"; your final number goes in "probability" and nothing else.
 
 Keep your internal reasoning concise: aim for a few hundred words at most. Do not
 attempt exhaustive year-by-year or case-by-case enumeration; reason from reference
