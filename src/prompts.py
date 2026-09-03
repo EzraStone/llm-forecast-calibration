@@ -88,7 +88,12 @@ FORECAST_SCHEMA = {
 
 
 def prompt_version(system_text: str) -> str:
-    tag = "std-v1-" if system_text is STANDARD_SYSTEM else "br-v1-"
+    if system_text is STANDARD_SYSTEM:
+        tag = "std-v1-"
+    elif system_text is BASERATE_SYSTEM:
+        tag = "br-v2-"
+    else:
+        tag = "unknown-"
     return tag + hashlib.sha256(system_text.encode()).hexdigest()[:6]
 
 
