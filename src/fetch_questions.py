@@ -188,19 +188,16 @@ async def main():
         pre = [x for x in kept if x[1] <= cutoff]
         print(f"pre_cutoff available: {len(pre)}   post_cutoff available: {len(post)}")
 
-        # Aim: >= min_post_cutoff post; fill the rest with pre if needed.
+        # Balanced strata split: half from each stratum (post is the honest stratum,
+        # pre is the contamination-prone one; RQ4 compares them).
         post_pick = post[:]
         pre_pick = pre[:]
         random.shuffle(post_pick)
         random.shuffle(pre_pick)
 
         need = args.target
-        if len(post_pick) >= args.min_post_cutoff:
-            take_post = min(len(post_pick), need - min(len(pre_pick), args.min_post_cutoff // 2))
-        else:
-            take_post = len(post_pick)
-        # simpler: take up to target from post first, then top up from pre
-        take_post = min(len(post_pick), need)
+        per_stratum = need // 2
+        take_post = min(len(post_pick), per_stratum)
         take_pre = min(len(pre_pick), need - take_post)
         print(f"plan: {take_post} post-cutoff + {take_pre} pre-cutoff")
 

@@ -6,11 +6,16 @@ Written honestly, before results are known. This file grows as constraints are d
 
 z.ai publishes no training-data cutoff for GLM-5.3 or its GLM-5.2 base (checked 2026-09-02
 against docs.z.ai and the GLM-5.3/GLM-5.2 model pages). GLM-5.3 was released 2026-08-14 and
-its post-training ran until roughly that date, so recent data is plausibly in training.
-We therefore assume a **training cutoff of 2026-06-01** and stratify questions by resolution
-date against it. This is an assumption, not a documented fact. The pre/post split is a proxy:
-any question resolving before the cutoff may have its outcome in training data, and the
-post-cutoff stratum is the only one where memorization can be largely excluded.
+its post-training ran until roughly that date, so we anchor the assumed cutoff at
+**2026-08-15**, the day after release: questions resolving after that date are the
+"post_cutoff" stratum (plausibly unseen), earlier resolutions are "pre_cutoff"
+(plausibly in training). This is an assumption, not a documented fact. Two additional
+caveats: (1) an earlier draft anchored the cutoff at 2026-06-01, but the Manifold
+resolve-date pagination floor (2026-07-01) makes a pre-July stratum unfetchable, so the
+usable pre-cutoff window is Jul 1–Aug 14, roughly six weeks; (2) even post-cutoff
+questions were *open* and being discussed before the cutoff, so question text and
+context may be in training even when the resolution is not. The pre/post split is a
+proxy, reported whether or not it is flattering.
 
 ## Provider constraints (TokenRouter free tier, measured 2026-09-02)
 
