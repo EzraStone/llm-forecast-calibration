@@ -14,7 +14,11 @@ You will be given:
 - The question description / resolution criteria
 - The fact that the question is closed
 
-Respond ONLY with a JSON object matching the required schema."""
+Respond ONLY with a JSON object matching the required schema.
+
+Keep your internal reasoning concise: aim for a few hundred words at most. Do not
+attempt exhaustive year-by-year or case-by-case enumeration; reason from reference
+classes and key facts instead."""
 
 STANDARD_USER_TEMPLATE = """Question:
 {title}
@@ -47,7 +51,11 @@ You will be given:
 - The fact that the question is closed
 
 Respond ONLY with a JSON object matching the required schema, where the fields capture
-the procedure above."""
+the procedure above.
+
+Keep your internal reasoning concise: aim for a few hundred words at most. Do not
+attempt exhaustive year-by-year or case-by-case enumeration; reason from reference
+classes and key facts instead."""
 
 BASERATE_USER_TEMPLATE = """Question:
 {title}
