@@ -19,6 +19,6 @@ MODEL_SLUG = os.environ.get("MODEL_SLUG", "z-ai/glm-5.3-free")
 # the release-anchored date is both more defensible and empirically usable.
 ASSUMED_CUTOFF = "2026-08-15"
 
-REQUEST_TIMEOUT_S = 300
+REQUEST_TIMEOUT_S = 420
 MAX_ATTEMPTS = 4
 RETRY_STATUS = {429, 500, 502, 503, 504}

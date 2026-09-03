@@ -384,7 +384,7 @@ async def main():
     ap.add_argument("--conditions", default="A,B,C,D,E",
                     help="comma list; subset runs are resumable")
     ap.add_argument("--limit", type=int, default=None, help="only first N questions")
-    ap.add_argument("--concurrency", type=int, default=14,
+    ap.add_argument("--concurrency", type=int, default=16,
                     help="workers; sized so the 7/min bucket binds (avg latency ~100s)")
     ap.add_argument("--bucket-rate", type=float, default=7.0)
     ap.add_argument("--stop-after", type=int, default=None,
