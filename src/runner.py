@@ -44,7 +44,10 @@ CONDITIONS = {
 RESPONSE_FORMAT = {"type": "json_schema", "json_schema": {"name": "forecast", "schema": FORECAST_SCHEMA}}
 
 # Effort-dependent output budget: reasoning consumes tokens before content.
-MAX_TOKENS = {"low": 8192, "high": 16384, "max": 24576}
+# Pilot lesson (2026-09-02): a low-effort call burned 8,139 reasoning tokens on a
+# quantitative question; small caps truncate (finish_reason=length) and dead-letter.
+# GLM-5.3 max output is 128K; caps below leave headroom while making truncation rare.
+MAX_TOKENS = {"low": 32768, "high": 65536, "max": 98304}
 
 
 class TokenBucket:
@@ -142,7 +145,6 @@ class Runner:
         self.done = completed_keys(raw_dir)
         self.files = {c: open(self.__raw_path(c), "a", encoding="utf-8") for c in CONDITIONS}
         self.dead = open(self.__dead_path(), "a", encoding="utf-8")
-        self.sem = asyncio.Semaphore(concurrency)
         self.started = time.monotonic()
         self.n_ok = 0
         self.n_err = 0
@@ -271,19 +273,50 @@ class Runner:
         print(f"[{now_iso()}] runner starting: {len(self.plan)} calls to make, "
               f"{len(self.done)} already complete", flush=True)
         print(f"conditions: {json.dumps({c: CONDITIONS[c] for c in CONDITIONS})}", flush=True)
-        try:
-            i = 0
-            for q, cond, s in self.plan:
+        # Bounded worker pool over the plan queue: workers pull in plan order,
+        # so question-major ordering is preserved even with concurrency > 1.
+        queue = asyncio.Queue()
+        for item in self.plan:
+            queue.put_nowait(item)
+        total = len(self.plan)
+        made = 0
+
+        async def worker(wid):
+            nonlocal made
+            while True:
+                try:
+                    q, cond, s = queue.get_nowait()
+                except asyncio.QueueEmpty:
+                    return
                 if await self.stop_requested():
-                    print(f"[{now_iso()}] STOP file detected; shutting down cleanly", flush=True)
-                    break
-                if self.stop_after and i >= self.stop_after:
-                    print(f"[{now_iso()}] reached --stop-after {self.stop_after}; pausing", flush=True)
-                    break
-                await self.one_call(q, cond, s)
-                i += 1
-                if self._halt:
-                    raise self._halt
+                    queue.put_nowait((q, cond, s))  # leave it for the resume pass
+                    return
+                if self.stop_after and made >= self.stop_after:
+                    queue.put_nowait((q, cond, s))
+                    while True:
+                        try:
+                            queue.get_nowait()
+                        except asyncio.QueueEmpty:
+                            return
+                try:
+                    await self.one_call(q, cond, s)
+                except RuntimeError as halt:
+                    self._halt = halt
+                    # drain the queue so all workers exit
+                    while True:
+                        try:
+                            queue.get_nowait()
+                        except asyncio.QueueEmpty:
+                            return
+                finally:
+                    made += 1
+                    self.progress_line()
+
+        workers = [asyncio.create_task(worker(i)) for i in range(self.concurrency)]
+        try:
+            await asyncio.gather(*workers)
+            if self._halt:
+                raise self._halt
         finally:
             self.progress_line(force=True)
             for f in self.files.values():
