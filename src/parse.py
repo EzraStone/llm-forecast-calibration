@@ -93,7 +93,7 @@ def main(raw_dir="data/raw", out_path="data/parsed/parsed.jsonl",
             qid=qid, condition=cond, sample_idx=sidx,
             probability=None if prob is None else round(float(prob), 6),
             parse_status=status,
-            stratum=q["stratum"] if q else "unknown",
+            stratum=q["stratum"] if q else "dropped",
             outcome=q["outcome"] if q else -1,
         ))
         statuses[(cond, status)] += 1
@@ -112,6 +112,9 @@ def main(raw_dir="data/raw", out_path="data/parsed/parsed.jsonl",
                 continue  # torn line; runner redoes these
             if rec.get("error"):
                 continue  # dead letters handled below
+            if rec["qid"] not in qs:
+                # sunk calls on questions dropped at Gate-2 dedupe; skip entirely
+                continue
             try:
                 content = rec["raw_response"]["choices"][0]["message"]["content"]
                 prob = parse_content(content)
@@ -119,7 +122,7 @@ def main(raw_dir="data/raw", out_path="data/parsed/parsed.jsonl",
             except Exception:
                 add(rec["qid"], cond, rec["sample_idx"], None, "parse_fail")
 
-    # dead letters get their own status rows (no probability)
+    # dead letters get their own status rows (no probability); skip dropped qids
     dl = os.path.join(raw_dir, "dead_letter.jsonl")
     if os.path.exists(dl):
         for line in open(dl, encoding="utf-8"):
@@ -129,6 +132,8 @@ def main(raw_dir="data/raw", out_path="data/parsed/parsed.jsonl",
             try:
                 rec = json.loads(line)
             except json.JSONDecodeError:
+                continue
+            if rec["qid"] not in qs:
                 continue
             add(rec["qid"], rec["condition"], rec["sample_idx"], None, "dead_letter")
 

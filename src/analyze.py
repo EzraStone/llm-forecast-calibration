@@ -112,7 +112,7 @@ def main():
             metric_rows.append(metrics_row(s["median"].values, s["outcome"].values,
                                            f"cond_{cond}", subset_name))
         # baselines on the same subset
-        s_all = sub[sub.condition.isin("ABCDE")]
+        s_all = sub[sub.condition.isin(list("ABCDE"))]
         if not s_all.empty:
             y = s_all.drop_duplicates("qid").outcome.values
             base_rate = y.mean()
