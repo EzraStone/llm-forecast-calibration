@@ -23,8 +23,14 @@ async def completion(
     reasoning_effort="high",
     response_format=None,
     max_tokens=4096,
+    bucket=None,
 ):
-    """One chat completion with retry on 429/5xx/timeout. Returns (body, latency_s, attempt)."""
+    """One chat completion with retry on 429/5xx/timeout/bad-200-body.
+
+    `bucket` (a src.runner.TokenBucket) meters EVERY attempt, including retries:
+    the provider's 8-req/min limit counts failed attempts too.
+    Returns (body, latency_s, attempt).
+    """
     payload = {
         "model": MODEL_SLUG,
         "messages": messages,
@@ -37,6 +43,8 @@ async def completion(
 
     last_err = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
+        if bucket is not None:
+            await bucket.take()
         t0 = time.perf_counter()
         try:
             async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT_S) as client:

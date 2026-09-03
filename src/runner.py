@@ -43,11 +43,13 @@ CONDITIONS = {
 
 RESPONSE_FORMAT = {"type": "json_schema", "json_schema": {"name": "forecast", "schema": FORECAST_SCHEMA}}
 
-# Effort-dependent output budget: reasoning consumes tokens before content.
-# Pilot lesson (2026-09-02): a low-effort call burned 8,139 reasoning tokens on a
-# quantitative question; small caps truncate (finish_reason=length) and dead-letter.
-# GLM-5.3 max output is 128K; caps below leave headroom while making truncation rare.
-MAX_TOKENS = {"low": 32768, "high": 65536, "max": 98304}
+# Effort-dependent output budget, co-designed with REQUEST_TIMEOUT_S=300s.
+# Measured free-tier decode speed ~40-60 tok/s (non-streaming): 12288 tokens
+# takes up to ~5min; larger caps cannot finish inside the timeout and turn into
+# ReadTimeout dead letters. 8192 low / 12288 high-max is the coherent envelope.
+# Truncation risk at these caps is real but rare (pilot: 8139 reasoning tokens
+# was the worst low-effort case; high effort is typically 2-4K).
+MAX_TOKENS = {"low": 8192, "high": 12288, "max": 12288}
 
 
 class TokenBucket:
@@ -225,7 +227,6 @@ class Runner:
         # schema-violation retry is handled inside: completion() retries transport-level
         # failures; a 200 that violates the schema is retried once here.
         for schema_retry in range(2):
-            await self.bucket.take()
             try:
                 body, latency, attempt = await completion(
                     messages,
@@ -233,6 +234,7 @@ class Runner:
                     reasoning_effort=spec["effort"],
                     response_format=RESPONSE_FORMAT,
                     max_tokens=MAX_TOKENS[spec["effort"]],
+                    bucket=self.bucket,
                 )
             except AttemptExhausted as e:
                 await self.write_record(q["qid"], cond, sample_idx, spec, messages, prompt_ver,
@@ -249,6 +251,11 @@ class Runner:
                 ok = isinstance(p, (int, float)) and 0.0 <= p <= 1.0
             except Exception:
                 ok = False
+            truncated = False
+            try:
+                truncated = body["choices"][0].get("finish_reason") == "length"
+            except Exception:
+                pass
             if ok:
                 await self.write_record(q["qid"], cond, sample_idx, spec, messages, prompt_ver,
                                         attempt, latency, body, None)
@@ -256,8 +263,10 @@ class Runner:
                 self.n_ok += 1
                 self.progress_line()
                 return
-            # schema violation: retry once, then dead-letter with the raw body
-            if schema_retry == 0:
+            # schema violation: retry once, then dead-letter with the raw body.
+            # Skip the retry when the generation hit the token cap: a temp-0 re-run
+            # truncates identically and just burns ~5 more minutes.
+            if schema_retry == 0 and not truncated:
                 continue
             await self.write_record(q["qid"], cond, sample_idx, spec, messages, prompt_ver,
                                     attempt, latency, body, "schema_violation_after_retry")
@@ -332,7 +341,8 @@ async def main():
     ap.add_argument("--conditions", default="A,B,C,D,E",
                     help="comma list; subset runs are resumable")
     ap.add_argument("--limit", type=int, default=None, help="only first N questions")
-    ap.add_argument("--concurrency", type=int, default=3)
+    ap.add_argument("--concurrency", type=int, default=14,
+                    help="workers; sized so the 7/min bucket binds (avg latency ~100s)")
     ap.add_argument("--bucket-rate", type=float, default=7.0)
     ap.add_argument("--stop-after", type=int, default=None,
                     help="stop after N new calls (for the 20-question pilot check)")
