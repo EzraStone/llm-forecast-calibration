@@ -100,6 +100,50 @@ def now_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def extract_probability(content):
+    """Parse the model's content into a probability, tolerating code fences.
+
+    Returns float in [0,1] or raises. Handles: plain JSON, ```json fences,
+    JSON embedded in prose (first {...} containing a probability), and
+    percentage-style numbers.
+    """
+    if content is None:
+        raise ValueError("no content")
+    text = content.strip()
+    # strip markdown code fences
+    if text.startswith("```"):
+        text = text.strip("`")  # drop leading/trailing fence markers
+        nl = text.find("\n")
+        if nl > 0 and text[:nl].strip().lower() in ("json", ""):
+            text = text[nl + 1:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+    try:
+        obj = json.loads(text)
+        p = obj["probability"]
+        if isinstance(p, (int, float)) and 0.0 <= p <= 1.0:
+            return float(p)
+        raise ValueError(f"probability out of range: {p!r}")
+    except (json.JSONDecodeError, KeyError, ValueError):
+        pass
+    # fallback: first JSON object embedded in prose
+    import re
+    m = re.search(r"\{[^{}]*\"probability\"[^{}]*\}", text, re.DOTALL)
+    if m:
+        try:
+            obj = json.loads(m.group(0))
+            p = obj["probability"]
+            if isinstance(p, (int, float)) and 0.0 <= p <= 1.0:
+                return float(p)
+        except Exception:
+            pass
+    raise ValueError(f"unparseable content: {text[:120]!r}")
+
+
+
+
+
 def load_questions(path):
     qs = [json.loads(l) for l in open(path, encoding="utf-8")]
     return qs
@@ -243,12 +287,11 @@ class Runner:
                 self.n_err += 1
                 self.progress_line()
                 return
-            # validate schema cheaply: probability present and in range
-            content = None
+            # validate: parse content into a probability (fences tolerated)
             try:
                 content = body["choices"][0]["message"]["content"]
-                p = json.loads(content)["probability"]
-                ok = isinstance(p, (int, float)) and 0.0 <= p <= 1.0
+                extract_probability(content)
+                ok = True
             except Exception:
                 ok = False
             truncated = False
