@@ -35,19 +35,20 @@ def test_murphy_components_sum_to_brier():
     rng = np.random.default_rng(7)
     for trial in range(20):
         y = rng.integers(0, 2, 60)
-        p = np.clip(rng.beta(2, 2, 60), 0.01, 0.99)
-        rel, res, unc = murphy_decomposition(p, y, n_bins=10)
+        # discrete forecasts (realistic: model outputs 0.01-granular probabilities)
+        p = np.round(np.clip(rng.beta(2, 2, 60), 0.01, 0.99), 2)
+        rel, res, unc = murphy_decomposition(p, y)
         assert rel - res + unc == pytest.approx(brier(p, y), abs=1e-9)
 
 
 def test_ece_zero_for_perfectly_calibrated():
     # construct a set where each bin's mean prediction equals its empirical frequency
-    # 10 bins: predictions 0.05..0.95, outcomes drawn to match exactly
+    # use integer-compatible frequencies (avoid banker's rounding): k/n = p_bin
     ps, ys = [], []
     for i in range(10):
         p_bin = (i + 0.5) / 10
-        n = 10
-        k = round(p_bin * n)
+        n = 20  # k = p_bin * 20 is an integer for 0.05..0.95
+        k = int(p_bin * n)
         ps.extend([p_bin] * n)
         ys.extend([1] * k + [0] * (n - k))
     assert ece(np.array(ps), np.array(ys), n_bins=10) == pytest.approx(0.0, abs=1e-12)

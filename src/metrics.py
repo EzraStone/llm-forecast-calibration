@@ -12,28 +12,26 @@ def brier(p, y):
     return float(np.mean((p - y) ** 2))
 
 
-def murphy_decomposition(p, y, n_bins=10):
+def murphy_decomposition(p, y, n_bins=None):
     """Brier decomposition into reliability, resolution, uncertainty.
 
-    rel  = mean over bins of n_b/N * (p_bar_b - y_bar_b)^2
-    res  = mean over bins of n_b/N * (y_bar_b - y_bar)^2
-    unc  = y_bar * (1 - y_bar)
-    Brier = rel - res + unc
+    Classical Murphy (1973) binning: each DISTINCT forecast value is its own bin,
+    which makes the identity Brier = rel - res + unc exact (verified in tests).
+    Forecasts here are discrete (model probabilities at ~0.01 granularity, or
+    medians of K samples), so distinct-value binning is both classical and exact.
+
+    n_bins is accepted for API compatibility and ignored; equal-width binning
+    would break the exact identity via within-bin variance.
     """
     p = np.asarray(p, dtype=float)
     y = np.asarray(y, dtype=float)
-    edges = np.linspace(0, 1, n_bins + 1)
-    # right-inclusive on the last edge
-    idx = np.clip(np.digitize(p, edges[1:-1], right=False), 0, n_bins - 1)
     n = len(p)
-    rel = res = 0.0
     ybar = y.mean()
-    for b in range(n_bins):
-        m = idx == b
-        if not m.any():
-            continue
+    rel = res = 0.0
+    for val in np.unique(p):
+        m = p == val
         nb = m.sum()
-        p_bar = p[m].mean()
+        p_bar = val  # the bin mean IS the value
         y_bar_b = y[m].mean()
         rel += (nb / n) * (p_bar - y_bar_b) ** 2
         res += (nb / n) * (y_bar_b - ybar) ** 2
