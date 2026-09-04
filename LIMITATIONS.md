@@ -64,3 +64,57 @@ is suggestive, not clean.
 - Parse failure rates by condition (Phase 3).
 - Underpowered comparisons, named with their CIs (Phase 4).
 - Any condition/top-up that could not complete within the API window (Phase 2).
+
+## Resolved at completion (2026-09-03)
+
+**Parse/dead-letter rates by condition (unique keys, after synonym recovery):**
+A 98.1% usable (4 dead), B 99.1% (2 dead), C 99.5% (1 dead), D 99.7% (6 dead),
+E 99.8% (2 dead). Dead causes: (1) reasoning loops that exhaust the 8,192–12,288-token
+output budget (deterministic; retried once, then abandoned — these questions get no
+forecast in that condition); (2) transient 429/timeout cascades (mostly recovered in a
+top-up pass). 77 rows were recovered by accepting observed probability-synonym keys
+(`prediction`, `forecast`, `external_forecast`); each is marked
+`parse_status=synonym_key` in `data/parsed/parsed.jsonl` and this recovery rate is
+reported per condition by `make parse`.
+
+**Truncation as a finding, not just a nuisance:** reasoning-budget exhaustion is
+itself an outcome of effort-conditioned forecasting (max-effort truncates more), so we
+report rather than engineer it away. The trade-off was forced by free-tier decode speed
+(~40–60 tok/s) against a hard API deadline: max_tokens above ~12,288 cannot complete
+within a survivable timeout.
+
+**Underpowered comparisons:** RQ1's ΔBrier CIs (±0.013) are roughly twice as wide as
+the effect sizes one would care about (±0.005–0.008 from the literature on
+sample-aggregation in LLM forecasting). With n=212 questions, this design can only
+detect aggregation effects larger than ~0.012. A future replication needs ~4x the
+questions (and a paid tier) to tighten CI by half.
+
+**Condition-order confound in workload:** question-major ordering means early
+questions were generated under provider load conditions that differed from late ones
+(error rate drifted 3%→8% across the 21-hour run). Condition comparisons are within-question
+so this is shared across conditions, but time-of-generation is not a controlled variable.
+
+**RQ4 cutoff date is an assumption anchored to model release (2026-08-15),** not a
+disclosed cutoff. z.ai publishes none. The pre-cutoff window is also only ~6 weeks
+(Jul 1–Aug 14, 2026) due to the Manifold API's resolve-date pagination floor — pre-
+and post-strata differ in question mix beyond just contamination.
+
+**Crowd baseline advantage (expanded):** the "crowd" is the last trade before
+resolution — it can incorporate the resolving event itself in the final hours of
+trading. It is an upper bound on true ex-ante crowd skill, not a fair ex-ante
+competitor. The model, by contrast, forecast with no news access at all. The 0.056-vs-
+0.21 gap is real but the comparison is suggestive, not clean, in both directions.
+
+**Prompt sensitivity:** one standard prompt + one base-rate prompt, revised twice
+during the pilot (reasoning-discipline sentence; schema-key instruction) before any
+full-run data was kept. Pilot-era records from superseded prompt versions were excluded
+from the study set (archived under data/raw_pilot_v0_* on the generating machine, not
+committed). Two prompts is not a prompt-robustness study.
+
+**Free-tier conditions changed the design:** the spec's original design (300
+questions × 63 calls = 18,900) was replaced with 212 × 18 = 3,816 calls, K=10 for D
+(spec: 30) and K=5 for E, because the provider's hard limit is 8 requests/minute
+including failed attempts (~45 hours would have been needed for the original design).
+The K-curve flattening test is thus truncated at K=10; if returns to aggregation only
+appear past K=10, this study cannot see them (though the flat K=1→10 trend argues
+against a sharp late gain).

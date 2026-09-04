@@ -1,0 +1,17 @@
+CC BY 4.0 License (applies to data/ only)
+
+Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Under the following terms:
+- Attribution: you must give appropriate credit to this repository and its author
+  (Ezra Stone), provide a link to the license, and indicate if changes were made.
+  You may do so in any reasonable manner, but not in any way that suggests the
+  licensor endorses you or your use.
+- No additional restrictions: you may not apply legal terms or technological
+  measures that legally restrict others from doing anything the license permits.
+
+Source question data originates from Manifold Markets (https://manifold.markets)
+and is republished under Manifold's API terms permitting non-commercial academic
+research use. Model responses are generated from GLM-5.3 (Z.ai) via TokenRouter
+under study conditions documented in this repository.
