@@ -28,11 +28,20 @@ def load(path="data/parsed/parsed.jsonl"):
 
 
 def per_question_frame(df):
-    """Collapse to one row per (qid, condition, aggregator) with a point forecast."""
+    """Collapse to one row per (qid, condition) with a point forecast.
+
+    Rows with parse_status in {ok, synonym_key} are used; dead_letter/parse_fail
+    are excluded. If a key appears both ok (successful retry) and dead-lettered,
+    the ok row wins by exclusion of dead_letter here.
+    """
+    usable = df[df.parse_status.isin(["ok", "synonym_key"])]
+    # if the same (qid, condition, sample_idx) appears twice (e.g. ok after retry
+    # plus a dead-letter row), keep the ok row
+    usable = usable.drop_duplicates(["qid", "condition", "sample_idx"], keep="first")
     qs = [json.loads(l) for l in open("data/questions.jsonl")]
     qmeta = pd.DataFrame(qs).set_index("qid")
     rows = []
-    for (qid, cond), grp in df[df.parse_status == "ok"].groupby(["qid", "condition"]):
+    for (qid, cond), grp in usable.groupby(["qid", "condition"]):
         probs = grp.sort_values("sample_idx").probability.values
         outcome = int(qmeta.loc[qid, "outcome"])
         stratum = qmeta.loc[qid, "stratum"]

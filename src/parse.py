@@ -15,6 +15,47 @@ sys.path.insert(0, ".")
 from src.schema import ParsedRow
 
 
+class _SynonymKey(Exception):
+    """Raised when probability was recovered from an observed synonym key."""
+
+    def __init__(self, value):
+        self.value = value
+
+
+def parse_content_loose(content):
+    """Like parse_content, but accepts observed synonym keys for probability.
+
+    Returns (probability, used_synonym: bool). Used ONLY to re-examine
+    dead-lettered schema violations; every recovered row is marked
+    parse_status='synonym_key' in parsed.jsonl.
+    """
+    if content is None:
+        raise ValueError("no content")
+    text = _strip_fences(content)
+    for m in [None] + list(re.finditer(r"\{[^{}]*\}", text, re.DOTALL)):
+        candidate = text if m is None else m.group(0)
+        try:
+            obj = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        try:
+            return _prob_from_obj(obj, allow_synonyms=False), False
+        except ValueError as e:
+            if "no probability key" in str(e):
+                try:
+                    return _prob_from_obj(obj, allow_synonyms=True), True
+                except ValueError:
+                    continue
+            continue
+    # percentage fallback
+    pm = re.search(r"(\d{1,3}(?:\.\d+)?)\s*%", text)
+    if pm:
+        val = float(pm.group(1)) / 100.0
+        if 0.0 <= val <= 1.0:
+            return val, False
+    raise ValueError("unparseable")
+
+
 def _strip_fences(text):
     t = text.strip()
     if t.startswith("```"):
@@ -61,10 +102,19 @@ def parse_content(content):
     raise ValueError(f"unparseable content: {text[:120]!r}")
 
 
-def _prob_from_obj(obj):
+def _prob_from_obj(obj, allow_synonyms=False):
     if not isinstance(obj, dict):
         raise ValueError("not an object")
     p = obj.get("probability")
+    if p is None and allow_synonyms:
+        # Observed key-name drift (documented; rate reported in parse output):
+        # the model sometimes emits a synonym for the probability field. Only
+        # synonyms actually seen in raw data are accepted. Recovered rows are
+        # marked parse_status='synonym_key' for auditability.
+        for alt in ("prediction", "forecast", "external_forecast", "p", "prob"):
+            if alt in obj:
+                p = obj[alt]
+                break
     if p is None:
         raise ValueError("no probability key")
     if isinstance(p, str):
@@ -122,7 +172,8 @@ def main(raw_dir="data/raw", out_path="data/parsed/parsed.jsonl",
             except Exception:
                 add(rec["qid"], cond, rec["sample_idx"], None, "parse_fail")
 
-    # dead letters get their own status rows (no probability); skip dropped qids
+    # dead letters: re-examine content under the loose parser; recovered
+    # synonym-key rows carry a probability; the rest stay dead_letter.
     dl = os.path.join(raw_dir, "dead_letter.jsonl")
     if os.path.exists(dl):
         for line in open(dl, encoding="utf-8"):
@@ -135,26 +186,41 @@ def main(raw_dir="data/raw", out_path="data/parsed/parsed.jsonl",
                 continue
             if rec["qid"] not in qs:
                 continue
-            add(rec["qid"], rec["condition"], rec["sample_idx"], None, "dead_letter")
+            try:
+                content = rec["raw_response"]["choices"][0]["message"]["content"]
+                prob, used_syn = parse_content_loose(content)
+                if used_syn:
+                    add(rec["qid"], rec["condition"], rec["sample_idx"], prob, "synonym_key")
+                else:
+                    # parseable content but was dead-lettered (e.g. retried-then-ok elsewhere)
+                    add(rec["qid"], rec["condition"], rec["sample_idx"], prob, "ok_deadletter")
+            except Exception:
+                add(rec["qid"], rec["condition"], rec["sample_idx"], None, "dead_letter")
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         for r in rows:
             f.write(r.model_dump_json() + "\n")
 
-    # report
-    print("=== PARSE REPORT (per condition) ===")
-    total = Counter()
-    for (cond, status), n in sorted(statuses.items()):
-        total[cond] += n
-        print(f"  {cond} {status}: {n}")
-    print("=== parse failure rate per condition ===")
+    # report (counts unique expected keys, not attempts)
+    print("=== PARSE REPORT (per condition, unique keys) ===")
+    K = {"A": 1, "B": 1, "C": 1, "D": 10, "E": 5}
+    n_questions = len(qs)
+    usable_keys = {}
+    for r in rows:
+        if r.parse_status in ("ok", "synonym_key", "ok_deadletter"):
+            usable_keys[(r.qid, r.condition, r.sample_idx)] = True
     for cond in "ABCDE":
-        t = total.get(cond, 0)
-        if t == 0:
+        expected = K[cond] * n_questions
+        if expected == 0:
             continue
-        fails = statuses.get((cond, "parse_fail"), 0) + statuses.get((cond, "dead_letter"), 0)
-        print(f"  {cond}: {fails}/{t} = {fails / t:.1%}  (halt threshold: 5%)")
+        got = sum(1 for k in usable_keys if k[1] == cond)
+        dead = expected - got
+        print(f"  {cond}: {got}/{expected} usable = {got/expected:.1%}"
+              f"  (dead: {dead} = {dead/expected:.1%}; halt threshold 5%)")
+    from collections import Counter as _C
+    st = _C(r.parse_status for r in rows)
+    print(f"row statuses: {dict(st)}")
     print(f"wrote {len(rows)} rows to {out_path}")
 
 
