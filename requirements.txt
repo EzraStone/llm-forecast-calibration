@@ -28,3 +28,5 @@ six==1.17.0
 tqdm==4.70.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0
+# publish-time only (HuggingFace dataset upload; not needed for make all)
+huggingface_hub==1.31.0
