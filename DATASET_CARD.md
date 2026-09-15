@@ -39,7 +39,7 @@ remains canonical for analysis code, results, figures, and archived pilot data.
 
 ## Version and file layout
 
-Version **1.0.0**, released **2026-09-15**; Git tag **v1.0** on both hosts.
+Version **1.0.0**, released **2026-09-15**; GitHub release tag **v1.0**; Hugging Face data pinned to an immutable commit.
 See [release notes](https://github.com/EzraStone/llm-forecast-calibration/blob/v1.0/RELEASE_NOTES.md).
 Paths below describe the Hugging Face mirror. In GitHub, the same dataset files
 live under `data/`; `DATASET_CARD.md` is copied verbatim to the Hugging Face
@@ -55,7 +55,7 @@ study; there is no predefined training/validation partition.
 from datasets import load_dataset
 
 repo = "ezra77/llm-forecast-calibration"
-revision = "v1.0"  # fixed release snapshot
+revision = "4283938acdd97b5fa41dcf673795ad0d38b019ca"  # fixed release snapshot
 questions = load_dataset(repo, "questions", split="test", revision=revision)  # 212 rows
 forecasts = load_dataset(repo, "forecasts", split="test", revision=revision)  # 4,026 rows
 post_cutoff_questions = questions.filter(lambda row: row["stratum"] == "post_cutoff")
@@ -136,8 +136,8 @@ This is a **mixed-rights dataset**, labeled `other` in the Hub metadata.
 Code and project-authored documentation are MIT-licensed. CC BY 4.0 applies only
 to project contributions to the extent Ezra Stone holds the relevant rights;
 it does not relicense Manifold question text, market data, or other third-party
-material. Read [DATA_LICENSE](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/v1.0/DATA_LICENSE)
-and [LICENSE](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/v1.0/LICENSE).
+material. Read [DATA_LICENSE](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/main/DATA_LICENSE)
+and [LICENSE](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/main/LICENSE).
 
 Manifold's [API licensing guidance](https://docs.manifold.markets/api#licensing)
 permits academic research, personal projects, and non-commercial use, while
@@ -154,9 +154,9 @@ Stone, Ezra (2026). *LLM Forecast Calibration Study: GLM-5.3 on Resolved Manifol
 Markets Questions*. Version 1.0.0. Hugging Face dataset and GitHub research
 repository.
 
-Machine-readable citations: [CITATION.cff](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/v1.0/CITATION.cff)
-and [CITATION.bib](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/v1.0/CITATION.bib).
-When reproducing results, cite this version and load `revision="v1.0"`.
+Machine-readable citations: [CITATION.cff](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/main/CITATION.cff)
+and [CITATION.bib](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/blob/main/CITATION.bib).
+When reproducing results, cite this version and load `revision="4283938acdd97b5fa41dcf673795ad0d38b019ca"`.
 
 ```bibtex
 @misc{stone2026llmforecastcalibration,
@@ -165,7 +165,7 @@ When reproducing results, cite this version and load `revision="v1.0"`.
   year = {2026},
   month = sep,
   howpublished = {Hugging Face dataset and GitHub research repository},
-  url = {https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0},
-  note = {Version 1.0.0; release tag v1.0}
+  url = {https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/4283938acdd97b5fa41dcf673795ad0d38b019ca},
+  note = {Version 1.0.0; GitHub release tag v1.0}
 }
 ```

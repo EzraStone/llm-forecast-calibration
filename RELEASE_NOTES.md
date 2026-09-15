@@ -27,17 +27,20 @@ snapshot. The main-study data are unchanged from GitHub commit
 
 ## Versioned access
 
+GitHub uses the `v1.0` release tag. Hugging Face data access is pinned to the
+immutable commit shown below; updated documentation is available on `main`.
+
 - [GitHub release](https://github.com/EzraStone/llm-forecast-calibration/releases/tag/v1.0)
-- [Hugging Face snapshot](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0)
+- [Hugging Face snapshot](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/4283938acdd97b5fa41dcf673795ad0d38b019ca)
 
 ```python
 from datasets import load_dataset
 
 questions = load_dataset(
-    "ezra77/llm-forecast-calibration", "questions", split="test", revision="v1.0"
+    "ezra77/llm-forecast-calibration", "questions", split="test", revision="4283938acdd97b5fa41dcf673795ad0d38b019ca"
 )
 forecasts = load_dataset(
-    "ezra77/llm-forecast-calibration", "forecasts", split="test", revision="v1.0"
+    "ezra77/llm-forecast-calibration", "forecasts", split="test", revision="4283938acdd97b5fa41dcf673795ad0d38b019ca"
 )
 ```
 

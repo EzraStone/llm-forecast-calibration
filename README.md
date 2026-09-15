@@ -105,7 +105,7 @@ permissions; the entire dataset is not represented as uniformly CC BY licensed.
 ## Version and citation
 
 Version **1.0.0** (tag **v1.0**), released **2026-09-15**.
-[Release notes](RELEASE_NOTES.md) | [Hugging Face snapshot](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0)
+[Release notes](RELEASE_NOTES.md) | [Hugging Face snapshot](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/4283938acdd97b5fa41dcf673795ad0d38b019ca)
 
 Stone, Ezra (2026). *LLM Forecast Calibration Study: GLM-5.3 on Resolved Manifold
 Markets Questions*. Version 1.0.0. See [CITATION.cff](CITATION.cff) or
@@ -115,10 +115,10 @@ Markets Questions*. Version 1.0.0. See [CITATION.cff](CITATION.cff) or
 from datasets import load_dataset
 
 questions = load_dataset(
-    "ezra77/llm-forecast-calibration", "questions", split="test", revision="v1.0"
+    "ezra77/llm-forecast-calibration", "questions", split="test", revision="4283938acdd97b5fa41dcf673795ad0d38b019ca"
 )
 forecasts = load_dataset(
-    "ezra77/llm-forecast-calibration", "forecasts", split="test", revision="v1.0"
+    "ezra77/llm-forecast-calibration", "forecasts", split="test", revision="4283938acdd97b5fa41dcf673795ad0d38b019ca"
 )
 ```
 
