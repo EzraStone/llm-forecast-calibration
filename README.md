@@ -81,8 +81,9 @@ timestamp, latency, token usage, and attempt number.
 
 `data/questions.jsonl` (questions + outcomes + crowd baselines), `data/raw/` (verbatim
 API responses), and `data/parsed/parsed.jsonl` (per-call probabilities) are in this
-repo. A HuggingFace dataset mirror is planned — see IDEAS.md status; the repo copy is
-canonical.
+repo. Published mirror (the durable copy): **https://huggingface.co/datasets/ezra77/llm-forecast-calibration**
+— 212 questions, 3,831 raw responses, 4,026 parsed rows, with a dataset card
+documenting every field, the generation parameters, and the contamination caveat.
 
 ## Limitations (summary)
 

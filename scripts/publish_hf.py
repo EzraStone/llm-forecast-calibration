@@ -102,7 +102,12 @@ def main():
     print(f"uploaded: {url}")
 
     print("=== verification vs local ===")
-    remote = {f.rfilename: f.size for f in api.list_repo_files(args.repo, repo_type="dataset")}
+    infos = api.get_paths_info(args.repo, list(sizes), repo_type="dataset")
+    remote = {}
+    for i in infos:
+        # RepoFile has .path and .size; skip folders (size None)
+        if getattr(i, "size", None) is not None:
+            remote[i.path] = i.size
     ok = True
     for rel, size in sizes.items():
         r = remote.get(rel)
