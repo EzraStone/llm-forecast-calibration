@@ -6,7 +6,7 @@ authors:
   - family-names: Stone
     given-names: Ezra
 version: 1.0.0
-date-released: 2026-09-14
+date-released: 2026-09-15
 url: "https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0"
 repository-code: "https://github.com/EzraStone/llm-forecast-calibration"
 abstract: >-

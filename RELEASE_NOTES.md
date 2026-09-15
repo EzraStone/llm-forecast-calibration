@@ -1,6 +1,6 @@
 # Version 1.0.0 (tag: v1.0)
 
-Released 2026-09-14.
+Released 2026-09-15.
 
 This release records the completed calibration study and a reproducible dataset
 snapshot. The main-study data are unchanged from GitHub commit

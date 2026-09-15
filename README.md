@@ -104,7 +104,7 @@ permissions; the entire dataset is not represented as uniformly CC BY licensed.
 
 ## Version and citation
 
-Version **1.0.0** (tag **v1.0**), released **2026-09-14**.
+Version **1.0.0** (tag **v1.0**), released **2026-09-15**.
 [Release notes](RELEASE_NOTES.md) | [Hugging Face snapshot](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0)
 
 Stone, Ezra (2026). *LLM Forecast Calibration Study: GLM-5.3 on Resolved Manifold

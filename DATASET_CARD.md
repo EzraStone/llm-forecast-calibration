@@ -39,7 +39,7 @@ remains canonical for analysis code, results, figures, and archived pilot data.
 
 ## Version and file layout
 
-Version **1.0.0**, released **2026-09-14**; Git tag **v1.0** on both hosts.
+Version **1.0.0**, released **2026-09-15**; Git tag **v1.0** on both hosts.
 See [release notes](https://github.com/EzraStone/llm-forecast-calibration/blob/v1.0/RELEASE_NOTES.md).
 Paths below describe the Hugging Face mirror. In GitHub, the same dataset files
 live under `data/`; `DATASET_CARD.md` is copied verbatim to the Hugging Face
