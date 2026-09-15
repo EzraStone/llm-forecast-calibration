@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "Please cite this version when using the dataset or study results."
+type: dataset
+title: "LLM Forecast Calibration Study: GLM-5.3 on Resolved Manifold Markets Questions"
+authors:
+  - family-names: Stone
+    given-names: Ezra
+version: 1.0.0
+date-released: 2026-09-14
+url: "https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0"
+repository-code: "https://github.com/EzraStone/llm-forecast-calibration"
+abstract: >-
+  A controlled study of LLM forecast calibration on 212 resolved binary
+  Manifold Markets questions, including 3,831 successful raw API responses
+  and 4,026 parsed per-call/attempt records across five experimental conditions.
+  See DATA_LICENSE for the scope of project licensing and third-party rights.
+keywords:
+  - forecasting
+  - calibration
+  - large language models
+  - Brier score

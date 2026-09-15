@@ -1,17 +1,60 @@
-CC BY 4.0 License (applies to data/ only)
+Data rights and third-party notices
+Version 1.0.0; reviewed 2026-09-14
 
-Attribution 4.0 International (CC BY 4.0)
+This dataset contains material from more than one source. No single permissive
+license is asserted for every part of the dataset.
+
+1. Project contributions
+
+To the extent Ezra Stone holds copyright or database rights in the original
+study contributions (including the selection/arrangement, experimental metadata,
+and generated forecast records), those rights are offered under Creative Commons
+Attribution 4.0 International (CC BY 4.0):
 https://creativecommons.org/licenses/by/4.0/
+Legal text: https://creativecommons.org/licenses/by/4.0/legalcode.en
 
-Under the following terms:
-- Attribution: you must give appropriate credit to this repository and its author
-  (Ezra Stone), provide a link to the license, and indicate if changes were made.
-  You may do so in any reasonable manner, but not in any way that suggests the
-  licensor endorses you or your use.
-- No additional restrictions: you may not apply legal terms or technological
-  measures that legally restrict others from doing anything the license permits.
+Credit Ezra Stone and this repository, link to the license, and indicate changes.
+This grant does not claim ownership of third-party material or establish that
+every model-generated output is copyrightable. It does not cover third-party
+content reproduced in model responses or any rights held by the model/provider.
 
-Source question data originates from Manifold Markets (https://manifold.markets)
-and is republished under Manifold's API terms permitting non-commercial academic
-research use. Model responses are generated from GLM-5.3 (Z.ai) via TokenRouter
-under study conditions documented in this repository.
+2. Manifold source material
+
+Question text, descriptions, resolution criteria, and market data were obtained
+from Manifold Markets through its public API. Manifold and its contributors
+retain their respective rights. This project does not relicense that material
+under CC BY 4.0 or MIT.
+
+Sources reviewed on 2026-09-14:
+- API licensing: https://docs.manifold.markets/api#licensing
+- Terms of Service: https://docs.manifold.markets/terms
+  (page states last updated 2026-01-31)
+- Data licensing contact: https://docs.manifold.markets/data
+
+The API documentation permits academic research, personal projects, and
+non-commercial use, and requires a Manifold data license for commercial AI/ML
+training with API data. These statements do not, by themselves, establish a
+right to redistribute or relicense all underlying material to downstream users.
+
+As of 2026-09-14, no separate written permission from Manifold to redistribute
+or relicense the question text and market data has been obtained for this
+release. The scope of redistribution permission remains unconfirmed. Users
+must assess the applicable source terms and obtain any needed permissions;
+the repository's availability is not a grant of additional third-party rights.
+For clarification or commercial licensing, contact data@manifold.markets.
+
+3. Where these notices apply
+
+In the GitHub repository, the dataset is under data/. In the Hugging Face
+mirror, the same main-study files are questions.jsonl, raw/*.jsonl, and
+parsed/parsed.jsonl. Manifold-origin fields remain third-party material even
+when joined into parsed tables or reproduced in raw model responses. Archived
+pilot files in the GitHub repository are also subject to these source notices.
+
+Code and project-authored documentation are under the MIT license in LICENSE.
+The mixed-rights dataset is labeled "other" in its Hugging Face metadata, with
+this notice linked as the explanation.
+
+This notice clarifies the scope of the earlier CC BY declaration. It does not
+revoke rights previously validly granted, impose extra restrictions on the
+project's CC BY contributions, or create permissions the project does not hold.

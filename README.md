@@ -95,4 +95,33 @@ rate limits forced K=10 (not 30) and 212 (not 300+) questions. Full detail in
 
 ## License
 
-Code: MIT. Data: CC-BY 4.0.
+Code and project-authored documentation: [MIT](LICENSE). Data contain project
+contributions offered under CC BY 4.0 only to the extent the author holds those
+rights, alongside Manifold-origin material subject to its own terms. No separate
+written redistribution or relicensing permission from Manifold has been obtained
+for this release. See [DATA_LICENSE](DATA_LICENSE) for scope and unresolved
+permissions; the entire dataset is not represented as uniformly CC BY licensed.
+
+## Version and citation
+
+Version **1.0.0** (tag **v1.0**), released **2026-09-14**.
+[Release notes](RELEASE_NOTES.md) | [Hugging Face snapshot](https://huggingface.co/datasets/ezra77/llm-forecast-calibration/tree/v1.0)
+
+Stone, Ezra (2026). *LLM Forecast Calibration Study: GLM-5.3 on Resolved Manifold
+Markets Questions*. Version 1.0.0. See [CITATION.cff](CITATION.cff) or
+[CITATION.bib](CITATION.bib).
+
+```python
+from datasets import load_dataset
+
+questions = load_dataset(
+    "ezra77/llm-forecast-calibration", "questions", split="test", revision="v1.0"
+)
+forecasts = load_dataset(
+    "ezra77/llm-forecast-calibration", "forecasts", split="test", revision="v1.0"
+)
+```
+
+The [dataset card](DATASET_CARD.md) documents schemas, retry handling, source
+provenance, and limitations. `python -m scripts.publish_hf --stage-only` prepares
+the same card, licenses, citations, release notes, and main-study data for the Hub.
